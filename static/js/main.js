@@ -5,7 +5,7 @@ var RealFaces = function(sceneName){
   this.roomName = location.pathname;
 
 
-  document.getElementById('roomURL').innerHTML = "realfaces.org" + location.pathname + " <br> Share this URL with your friends so they can join your room!"
+  //document.getElementById('roomURL').innerHTML = "realfaces.org" + location.pathname + " <br> Share this URL with your friends so they can join your room!"
 
 
   playerEvents.addListener('start_webRTC', this.initWebRTC);
@@ -18,7 +18,7 @@ var RealFaces = function(sceneName){
   }
 
   //activate pointer lock
-  this.THREE.pointerLock();
+  //this.THREE.pointerLock();
 
   //construct scene based on url
   this.THREE.createScene(sceneName);
@@ -48,4 +48,25 @@ var RealFaces = function(sceneName){
 RealFaces.prototype.initWebRTC = function(clientID, context){
   context.webrtc = new RealWebRTC(clientID);
 };
+
+
+
+
+
+//bugbugSOON
+//with no wifi...look what happens... dev issue mainly...
+// Failed to load resource: net::ERR_INTERNET_DISCONNECTED
+// 2http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js Failed to load resource: net::ERR_INTERNET_DISCONNECTED
+// http://localhost:8081/js/libs/jquery-1.7.1.min.js Failed to load resource: the server responded with a status of 404 (Not Found)
+
+// LIKELY SUSPECTS.....
+// views\layout.jade:30:        script(src='//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js')
+// views\pages\ArtGalleryLayout.jade:28:        script(src='//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.m
+// in.js')
+// views\pages\layout.jade:29:        script(src='//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js')
+// views\pages\OutdoorsLayout.jade:28:        script(src='//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min
+// .js')
+// views\pages\UnionSquareLayout.jade:28:        script(src='//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.
+// min.js')
+
 

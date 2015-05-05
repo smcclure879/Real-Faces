@@ -28,6 +28,10 @@ THREE.PointerLockControls = function ( camera, sceneVars, positiveBoundaryX, neg
   var moveBackward = false;
   var moveLeft = false;
   var moveRight = false;
+  var moveUp = false;
+  var moveDown = false;
+  var turnLeft = false;
+  var turnRight = false;
 
   var isOnObject = false;
   var canJump = false;
@@ -55,9 +59,25 @@ THREE.PointerLockControls = function ( camera, sceneVars, positiveBoundaryX, neg
   };
 
   var rotated = false;
+  
+  var ignoreRightMouse = function ( event ) {
+  
+	if (event.button==2)
+	{
+		cancelBubble(event);
+		return false;
+	}
+  
+  };
+  
+  
   var onMouseMove = function ( event ) {
+  
 
-    if ( scope.enabled === false ) return;
+	//if not exactly the right mouse down, then ignore
+	if (event.button!=2) return;
+  
+    //if ( scope.enabled === false ) return;
 
     var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
     var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
@@ -75,26 +95,57 @@ THREE.PointerLockControls = function ( camera, sceneVars, positiveBoundaryX, neg
 
   };
 
+
+
+//associate tablet buttons...
+//bugbug instead of all these move & turn binary variables, consider the logic in first version, which had a struct for what actions being done right now...
+associateButtons({	'textChat':
+						function() { playerEvents.emitEvent('start_chat_typing'); },
+					'moveLeft':
+						function() { moveLeft=true; setTimeout( function(){ moveLeft=false; },80); },
+					'moveRight':
+						function() { moveRight=true; setTimeout( function(){ moveRight=false; },80); },
+					'moveForward':
+						function() { moveForward=true; setTimeout( function(){ moveForward=false; },80); },
+					'moveBack':
+						function() { moveBackward=true; setTimeout( function(){ moveBackward=false; },80); }
+						
+				});
+
+
+
+
+
+
+
   var onKeyDown = function ( event ) {
 
     switch ( event.keyCode ) {
 
-      case 38: // up
+      case 38: // up arrow
+        turnUp = true;
+        break;
       case 87: // w
         moveForward = true;
         break;
 
-      case 37: // left
+      case 37: // left arrow
+        turnLeft = true;
+        break;
       case 65: // a
         moveLeft = true;
         break;
 
-      case 40: // down
+      case 40: // down arrow
+        turnDown = true;
+        break;
       case 83: // s
         moveBackward = true;
         break;
 
-      case 39: // right
+      case 39: // right arrow
+        turnRight = true;
+        break;
       case 68: // d
         moveRight = true;
         break;
@@ -117,21 +168,29 @@ THREE.PointerLockControls = function ( camera, sceneVars, positiveBoundaryX, neg
     switch( event.keyCode ) {
 
       case 38: // up
+        turnUp = false;
+        break;
       case 87: // w
         moveForward = false;
         break;
 
       case 37: // left
+        turnLeft = false;
+        break;
       case 65: // a
         moveLeft = false;
         break;
 
       case 40: // down
+        turnDown = false;
+        break;
       case 83: // s
         moveBackward = false;
         break;
 
       case 39: // right
+        turnRight = false;
+        break;
       case 68: // d
         moveRight = false;
         break;
@@ -144,7 +203,12 @@ THREE.PointerLockControls = function ( camera, sceneVars, positiveBoundaryX, neg
 
   };
 
+  //bugbug these should be on the canvas only! not doc!  
   document.addEventListener( 'mousemove', onMouseMove, false );
+  document.addEventListener( 'mousedown', ignoreRightMouse, false ); 
+  document.addEventListener( 'mouseup', ignoreRightMouse, false );
+  document.addEventListener( 'onclick', ignoreRightMouse, false );
+  
   document.addEventListener( 'keydown', onKeyDown, false );
   document.addEventListener( 'keyup', onKeyUp, false );
 
@@ -193,8 +257,11 @@ THREE.PointerLockControls = function ( camera, sceneVars, positiveBoundaryX, neg
     var jumped = false;
 
 
-    if ( scope.enabled === false ) return;
+    //if ( scope.enabled === false ) return;
+    if (!realFaces) return;
+    if (!realFaces.THREE) return;
 
+    
     var time = performance.now();
     var delta = ( time - prevTime ) / 1000;
 
@@ -221,8 +288,10 @@ THREE.PointerLockControls = function ( camera, sceneVars, positiveBoundaryX, neg
     if ( moveForward ) velocity.z -= speed * delta;
     if ( moveBackward ) velocity.z += speed * delta;
 
-    if ( moveLeft ) velocity.x -= speed * delta;
+    if ( moveLeft )  velocity.x -= speed * delta;
     if ( moveRight ) velocity.x += speed * delta;
+	
+	//if ( turnLeft ) bugbug
 
 
     // Min velocity is enabled to prevent insignificant movements from being broadcast
@@ -266,7 +335,7 @@ THREE.PointerLockControls = function ( camera, sceneVars, positiveBoundaryX, neg
     yawObject.translateY( velocity.y * delta );
     yawObject.translateZ( velocity.z * delta );
 
-
+    
 
     var overlappedPlayerPosition = realFaces.THREE.findOtherPlayerCollision(yawObject.position.x, yawObject.position.z);
 
@@ -334,3 +403,27 @@ THREE.PointerLockControls = function ( camera, sceneVars, positiveBoundaryX, neg
   };
 
 };
+
+
+function cancelBubble(e) {
+  var evt = e ? e:window.event;
+  if (evt.stopPropagation)    
+	evt.stopPropagation();
+  if (evt.cancelBubble!=null) 
+	evt.cancelBubble = true;
+}
+
+
+
+function associateButtons(buttonMap)
+{
+	for (var buttonName in buttonMap)
+	{
+		var action=buttonMap[buttonName];
+		document.getElementById(buttonName).addEventListener('click',action);
+	}
+}
+
+
+
+
