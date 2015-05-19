@@ -16,6 +16,7 @@ var setPrivateURL = function(id, base){
 
 }
 
-setPrivateURL('UnionSquarePrivate', 'UnionSquare-');
-setPrivateURL('OutdoorsPrivate', 'Outdoors-');
+//bugbug for later
+//setPrivateURL('UnionSquarePrivate', 'UnionSquare-');
+//setPrivateURL('OutdoorsPrivate', 'Outdoors-');
 setPrivateURL('ArtGalleryPrivate', 'ArtGallery-');

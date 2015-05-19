@@ -60,58 +60,47 @@ THREE.PointerLockControls = function ( camera, sceneVars, positiveBoundaryX, neg
 
   var rotated = false;
   
-  var ignoreRightMouse = function ( event ) {
-  
-	if (event.button==2)
-	{
-		cancelBubble(event);
-		return false;
-	}
-  
-  };
   
   
-  var onMouseMove = function ( event ) {
   
-
-	//if not exactly the right mouse down, then ignore
-	if (event.button!=2) return;
   
+  var onOrientationMove = function ( event ) {  
+	
+	//some stuff we just cannot handle....
     //if ( scope.enabled === false ) return;
+	var movement = event.detail;
+	if (!movement) //non-existent...
+		return;
+	var margin = 0.04;  //too small...
+	if (Math.abs(movement.dx + movement.dy) < margin)
+		return;
 
-    var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-    var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+	//else it's a "real" rotation		
+	rotated = true;
 
-    if (Math.abs(movementX) > 0.04 || Math.abs(movementY) > 0.04){
+	yawObject.rotation.y -= movement.dx * 0.002;
+	pitchObject.rotation.x -= movement.dy * 0.002;
 
-      rotated = true;
-
-      yawObject.rotation.y -= movementX * 0.002;
-      pitchObject.rotation.x -= movementY * 0.002;
-
-      pitchObject.rotation.x = Math.max( - PI_2, Math.min( PI_2, pitchObject.rotation.x ) );
-
-    }
+	pitchObject.rotation.x = Math.max( - PI_2, Math.min( PI_2, pitchObject.rotation.x ) );
 
   };
 
 
-
-//associate tablet buttons...
-//bugbug instead of all these move & turn binary variables, consider the logic in first version, which had a struct for what actions being done right now...
-associateButtons({	'textChat':
-						function() { playerEvents.emitEvent('start_chat_typing'); },
-					'moveLeft':
-						function() { moveLeft=true; setTimeout( function(){ moveLeft=false; },80); },
-					'moveRight':
-						function() { moveRight=true; setTimeout( function(){ moveRight=false; },80); },
-					'moveForward':
-						function() { moveForward=true; setTimeout( function(){ moveForward=false; },80); },
-					'moveBack':
-						function() { moveBackward=true; setTimeout( function(){ moveBackward=false; },80); }
-						
-				});
-
+  //associate tablet buttons...
+  //bugbug instead of all these move & turn binary variables, consider the logic in first version, which had a struct for what actions being done right now...
+  associateButtons({	'textChat':
+							function() { playerEvents.emitEvent('start_chat_typing'); },
+						'moveLeft':
+							function() { moveLeft=true; setTimeout( function(){ moveLeft=false; },80); },
+						'moveRight':
+							function() { moveRight=true; setTimeout( function(){ moveRight=false; },80); },
+						'moveForward':
+							function() { moveForward=true; setTimeout( function(){ moveForward=false; },80); },
+						'moveBack':
+							function() { moveBackward=true; setTimeout( function(){ moveBackward=false; },80); }
+							
+					});
+  
 
 
 
@@ -203,14 +192,15 @@ associateButtons({	'textChat':
 
   };
 
-  //bugbug these should be on the canvas only! not doc!  
-  document.addEventListener( 'mousemove', onMouseMove, false );
-  document.addEventListener( 'mousedown', ignoreRightMouse, false ); 
-  document.addEventListener( 'mouseup', ignoreRightMouse, false );
-  document.addEventListener( 'onclick', ignoreRightMouse, false );
+  this.prepControls=function(canvas) {
+      this.touchControl = new TouchControl(canvas);
+	  canvas.addEventListener( 'mytouchmove', onOrientationMove, false);  //handles mouse also.  bugbug name event better?
   
-  document.addEventListener( 'keydown', onKeyDown, false );
-  document.addEventListener( 'keyup', onKeyUp, false );
+	  
+	  
+	  document.addEventListener( 'keydown', onKeyDown, false );
+	  document.addEventListener( 'keyup', onKeyUp, false );
+  };
 
   this.enabled = false;
 
@@ -291,8 +281,18 @@ associateButtons({	'textChat':
     if ( moveLeft )  velocity.x -= speed * delta;
     if ( moveRight ) velocity.x += speed * delta;
 	
-	//if ( turnLeft ) bugbug
 
+	//bugbug likely not needed
+	if ( turnLeft ) 
+	{
+	
+	
+	}
+	if (turnRight)
+	{
+	
+	}
+	
 
     // Min velocity is enabled to prevent insignificant movements from being broadcast
     // Max velocity is a work around for the after pause teleport bug in PointerLock vendor code
@@ -427,3 +427,125 @@ function associateButtons(buttonMap)
 
 
 
+//-----------------  new file ??  bugbug
+//class...
+function TouchControl(canvas)
+{
+	var that = this;
+	canvas.addEventListener( 'touchstart', that.onTouchStart.bind(that), false );
+	canvas.addEventListener( 'touchmove', that.onTouchMove.bind(that), false );
+	canvas.addEventListener( 'touchend', that.onTouchEnd.bind(that), false );
+	canvas.addEventListener( 'mousemove', that.onMouseMove.bind(that), false);
+	
+	//atempt to remove those nasty context menus on the right mouse, since it's orientation instead
+	//var ignoreRightMouse = that.ignoreRightMouse.bind(that);  //bugbug think the global is OK???
+	canvas.addEventListener( 'mousedown', ignoreRightMouse, false ); 
+	canvas.addEventListener( 'mouseup', ignoreRightMouse, false );
+	canvas.addEventListener( 'click', ignoreRightMouse, false );
+	
+	this.tracker = {};
+	this.canvas = canvas;
+}
+
+
+TouchControl.prototype.onTouchStart = function ( event )
+{
+	event.preventDefault();
+	var tch = event.changedTouches[0];
+	this.updatePosition(tch);
+}
+
+TouchControl.prototype.onTouchMove = function ( event )
+{
+	event.preventDefault();
+	var tch = event.changedTouches[0];
+	var id = this.getId(tch);
+	var old = this.tracker[id];
+	var detail = {dx:tch.pageX-old.x, dy:tch.pageY-old.y};	
+	var event = new CustomEvent('mytouchmove',{detail:detail});
+	this.updatePosition(tch);
+	this.canvas.dispatchEvent(event);
+}
+
+TouchControl.prototype.onTouchEnd = function ( event )
+{
+	//bugbug consolidate code with other base-level touch event handlers
+	event.preventDefault();
+	var tch = event.changedTouches[0];
+	var id = this.getId(tch);
+	var old = this.tracker[id];
+	var detail = {dx:tch.pageX-old.x, dy:tch.pageY-old.y};	
+	var event = new CustomEvent('mytouchmove',{detail:detail});
+	//this.updatePosition(tch);
+	this.canvas.dispatchEvent(event);
+	delete this.tracker[event.id];
+}
+
+
+TouchControl.prototype.onMouseMove = function ( event ) {
+	//if not exactly the right mouse down, then ignore
+	if ( event.button != 2 ) 
+		return;
+	
+	var detail = interpretMouseMovement(event);
+	var event = new CustomEvent('mytouchmove',{detail:detail});
+	
+	this.canvas.dispatchEvent(event);
+};
+
+
+
+  
+//bugbug make internal??
+TouchControl.prototype.updatePosition = function ( tch ) 
+{
+    //a touch from touchEvent.changedTouches[0]
+	var id = this.getId(tch);
+	this.tracker[id] = {x:tch.pageX, y:tch.pageY};
+}
+
+
+// var interpretTouchMovement = function ( event ) {
+  // return {
+			// x: event.changedTouches[0].pageX,
+			// y: event.changedTouches[0].pageY
+		// };  
+// };
+
+
+// function Movement(x,y)
+// {
+	// this.x=x;
+	// this.y=y;
+// }
+
+// function MovementFromEvent(event)
+// {
+	
+// }
+
+
+  
+TouchControl.prototype.getId = function (tch) {
+	return tch.identifier;
+}
+
+
+var interpretMouseMovement = function ( event ) {
+	return {					
+			dx: event.movementX || event.mozMovementX || event.webkitMovementX || 0,
+			dy: event.movementY || event.mozMovementY || event.webkitMovementY || 0
+		};  
+};
+
+
+var ignoreRightMouse = function ( event ) {
+
+if (event.button==2)
+{
+	cancelBubble(event);
+	event.preventDefault();
+	return false;
+}
+
+};

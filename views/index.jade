@@ -3,41 +3,15 @@ extends layout
 block content
     .container
       .header
-        ul.nav.nav-pills.pull-right
-          li.active
-            a(href='./') Home
-          li
-            a(href='./About') About
-          li
-            a(href='./Contact') Contact
-        h3.text-muted Frakture (based on RealFaces)
-        h2
+       *
+       a(href='./') Home          
+       *
+       a(href='./About') About        
+       *
+       a(href='./Contact') Contact    
+       h2 Frakture (based on RealFaces)
+       h4
           a(href='./ArtGallery', role='button') you probably want to click here
-        
-      //.jumbotron
-        //.col-lg-6
-          //h2 Welcome to Real Faces
-          //p.lead
-            //| Real Faces is a 3D video conferencing app that aims to make internet communication as real as life. To start using it, select one of the scenes below...
-        //iframe(width="420", height="236", src="https://www.youtube.com/embed/z5C1OVLiDBE?rel=0&start=45;controls=0?", frameborder="0", allowfullscreen)
-        
-        
-      .row.marketing
-        .col-lg-6
-          h3 The Art Gallery
-          p
-            | Enter the art gallery, decorated with the technologies used to build Real Faces. This scene is the most complex and older computers may have difficulty running it.
-          a.btn.btn-lg.btn-success(id= 'ArtGalleryPrivate', role='button') Create Private Room
-          a.btn.btn-lg.btn-default(href='./ArtGallery', role='button') Enter Public Room
-          h3 Union Square
-          p
-            | Have a conversation in San Francisco's Union Square.
-          a.btn.btn-lg.btn-success(id= 'UnionSquarePrivate', role='button') Create Private Room
-          a.btn.btn-lg.btn-default(href='./UnionSquare', role='button') Enter Public Room
-        .col-lg-6
-          h3 Outdoors
-          p
-           | Chat with other users in a leafy park.
-          a.btn.btn-lg.btn-success(id= 'OutdoorsPrivate', role='button') Create Private Room
-          a.btn.btn-lg.btn-default(href='./Outdoors', role='button') Enter Public Room
-
+       h6
+          you might want this tho: 
+          a.btn.btn-lg.btn-success(id= 'ArtGalleryPrivate', role='button') Private Room

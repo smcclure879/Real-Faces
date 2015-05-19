@@ -182,7 +182,7 @@ RealTHREE.prototype.createSceneArtGallery = function () {
   this.scene.add( verticalMirrorMesh );
 
   document.body.appendChild( renderer.domElement );
-
+  
 }
 
 RealTHREE.prototype.createSceneUnionSquare  = function () {
@@ -262,6 +262,8 @@ RealTHREE.prototype.createScene = function (sceneName) {
   }else if(sceneName === 'UnionSquare'){
     this.createSceneUnionSquare();
   }
+  
+  this.controls.prepControls(this.renderer.domElement);
 }
 
 RealTHREE.prototype.onWindowResize = function() {
