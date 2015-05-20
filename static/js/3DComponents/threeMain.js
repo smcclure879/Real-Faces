@@ -5,7 +5,7 @@ var RealTHREE = function (xMinBoundary, xMaxBoundary, zMinBoundary, zMaxBoundary
   this.duckWalkers = [];
   this.sceneVars = {
     playerStartHeight:12,
-    playerSpeed: 300,
+    playerSpeed: 400,
     playerJump: 'x',
     playerSize: 'x',
     sceneSize: 500,

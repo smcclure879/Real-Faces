@@ -1,5 +1,5 @@
 /**
- * @author mrdoob / http://mrdoob.com/
+ * @author mrdoob / http://mrdoob.com/  (then the realfaces team, then smcclure879)
  */
 // WARNING: This vendor file has been heavily modified
 // consider moving from vendor directory
@@ -32,7 +32,10 @@ THREE.PointerLockControls = function ( camera, sceneVars, positiveBoundaryX, neg
   var moveDown = false;
   var turnLeft = false;
   var turnRight = false;
-
+  var turnUp = false;
+  var turnDown = false;
+  
+  
   var isOnObject = false;
   var canJump = false;
 
@@ -88,16 +91,25 @@ THREE.PointerLockControls = function ( camera, sceneVars, positiveBoundaryX, neg
 
   //associate tablet buttons...
   //bugbug instead of all these move & turn binary variables, consider the logic in first version, which had a struct for what actions being done right now...
+  var delay = 100; //bugbug don't want to do it this way anyway....just for a few hours....
   associateButtons({	'textChat':
 							function() { playerEvents.emitEvent('start_chat_typing'); },
 						'moveLeft':
-							function() { moveLeft=true; setTimeout( function(){ moveLeft=false; },80); },
+							function() { moveLeft=true; setTimeout( function(){ moveLeft=false; },delay); },
 						'moveRight':
-							function() { moveRight=true; setTimeout( function(){ moveRight=false; },80); },
+							function() { moveRight=true; setTimeout( function(){ moveRight=false; },delay); },
 						'moveForward':
-							function() { moveForward=true; setTimeout( function(){ moveForward=false; },80); },
+							function() { moveForward=true; setTimeout( function(){ moveForward=false; },delay); },
 						'moveBack':
-							function() { moveBackward=true; setTimeout( function(){ moveBackward=false; },80); }
+							function() { moveBackward=true; setTimeout( function(){ moveBackward=false; },delay); },
+						'turnLeft':
+							function() { turnLeft=true; setTimeout( function(){ turnLeft=false; }, delay);  },
+						'turnRight':
+							function() { turnRight=true; setTimeout( function(){ turnRight=false; }, delay);  }, 
+						'turnUp':
+							function() { turnUp=true; setTimeout( function(){ turnUp=false; }, delay);  },
+						'turnDown':
+							function() { turnDown=true; setTimeout( function(){ turnDown=false; }, delay);  }
 							
 					});
   
@@ -246,7 +258,6 @@ THREE.PointerLockControls = function ( camera, sceneVars, positiveBoundaryX, neg
 
     var jumped = false;
 
-
     //if ( scope.enabled === false ) return;
     if (!realFaces) return;
     if (!realFaces.THREE) return;
@@ -279,20 +290,29 @@ THREE.PointerLockControls = function ( camera, sceneVars, positiveBoundaryX, neg
     if ( moveBackward ) velocity.z += speed * delta;
 
     if ( moveLeft )  velocity.x -= speed * delta;
-    if ( moveRight ) velocity.x += speed * delta;
-	
+    if ( moveRight ) velocity.x += speed * delta
 
-	//bugbug likely not needed
+
+
+
+	rotated = (turnLeft || turnRight || turnUp || turnDown) ;
+	
+	var iota = 0.01;
+	
 	if ( turnLeft ) 
-	{
+		yawObject.rotation.y += iota ;
+	if ( turnRight )
+		yawObject.rotation.y -= iota ;
+
+	if ( turnUp )
+		pitchObject.rotation.x += iota ;
+	if ( turnDown )
+		pitchObject.rotation.x -= iota ;
 	
+	pitchObject.rotation.x = Math.max( - PI_2, Math.min( PI_2, pitchObject.rotation.x ) );
+
 	
-	}
-	if (turnRight)
-	{
-	
-	}
-	
+		
 
     // Min velocity is enabled to prevent insignificant movements from being broadcast
     // Max velocity is a work around for the after pause teleport bug in PointerLock vendor code
@@ -327,8 +347,8 @@ THREE.PointerLockControls = function ( camera, sceneVars, positiveBoundaryX, neg
 
     }
 
-    var originalX = yawObject.position.x;
-    var originalZ = yawObject.position.z;
+    // var originalX = yawObject.position.x;
+    // var originalZ = yawObject.position.z;
 
 
     yawObject.translateX( velocity.x * delta );
@@ -397,9 +417,9 @@ THREE.PointerLockControls = function ( camera, sceneVars, positiveBoundaryX, neg
       var translation = getTranslation();
       playerEvents.emitEvent('player_movement', [translation]);
       //socket.emit('movement', velocity);
-      rotated = false;
-    }
 
+    }
+    rotated = false;
   };
 
 };
@@ -437,11 +457,12 @@ function TouchControl(canvas)
 	canvas.addEventListener( 'touchend', that.onTouchEnd.bind(that), false );
 	canvas.addEventListener( 'mousemove', that.onMouseMove.bind(that), false);
 	
-	//atempt to remove those nasty context menus on the right mouse, since it's orientation instead
+	//attempt to remove those nasty context menus on the right mouse, since it's orientation instead
 	//var ignoreRightMouse = that.ignoreRightMouse.bind(that);  //bugbug think the global is OK???
-	canvas.addEventListener( 'mousedown', ignoreRightMouse, false ); 
-	canvas.addEventListener( 'mouseup', ignoreRightMouse, false );
-	canvas.addEventListener( 'click', ignoreRightMouse, false );
+	// canvas.addEventListener( 'mousedown', ignoreRightMouse, false ); 
+	// canvas.addEventListener( 'mouseup', ignoreRightMouse, false );
+	// canvas.addEventListener( 'click', ignoreRightMouse, false );
+	canvas.addEventListener( 'contextmenu', cancelIt, false );
 	
 	this.tracker = {};
 	this.canvas = canvas;
@@ -539,13 +560,16 @@ var interpretMouseMovement = function ( event ) {
 };
 
 
-var ignoreRightMouse = function ( event ) {
+// var ignoreRightMouse = function ( event ) {
 
-if (event.button==2)
-{
+	// if (event.button!=2)
+		// return;
+	// cancelIt(event);
+// }
+
+var cancelIt = function ( event ) {
+
 	cancelBubble(event);
 	event.preventDefault();
 	return false;
-}
-
 };
