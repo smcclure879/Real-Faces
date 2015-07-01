@@ -42,6 +42,7 @@ require('./sockets/signalmaster.js')(io);
 ///////////////////////////////////////////
 
 server.get('/', function(req,res){
+  console.log('about to use index !!!!! ip='+req.connection.remoteAddress);
   res.render('index.jade', {
     locals : {
               title : 'Your Page Title'
@@ -100,48 +101,49 @@ server.get('/Outdoors', function(req,res){
 });
 
 server.get('/Outdoors-*', function(req,res){
-  console.log('in private')
-  res.render('pages/Outdoors.jade', {
-    locals : {
-              title : 'Your Page Title'
-             ,description: 'Your Page Description'
-             ,author: 'Your Name'
-             ,analyticssiteid: 'XXXXXXX'
-            }
-  });
+    console.log('in private');
+    console.log('bugbug steve it worked!!');
+    res.render('pages/Outdoors.jade', {
+    	locals : {
+            title : 'Your Page Title'
+            ,description: 'Your Page Description'
+            ,author: 'Your Name'
+            ,analyticssiteid: 'XXXXXXX'
+        }
+    });
 });
 
 server.get('/UnionSquare', function(req,res){
-  res.render('pages/UnionSquare.jade', {
-    locals : {
-              title : 'Your Page Title'
-             ,description: 'Your Page Description'
-             ,author: 'Your Name'
-             ,analyticssiteid: 'XXXXXXX'
-            }
-  });
+    res.render('pages/UnionSquare.jade', {
+	locals : {
+            title : 'Your Page Title'
+            ,description: 'Your Page Description'
+            ,author: 'Your Name'
+            ,analyticssiteid: 'XXXXXXX'
+        }
+    });
 });
 
 server.get('/UnionSquare-*', function(req,res){
-  res.render('pages/UnionSquare.jade', {
-    locals : {
-              title : 'Your Page Title'
-             ,description: 'Your Page Description'
-             ,author: 'Your Name'
-             ,analyticssiteid: 'XXXXXXX'
-            }
-  });
+    res.render('pages/UnionSquare.jade', {
+	locals : {
+            title : 'Your Page Title'
+            ,description: 'Your Page Description'
+            ,author: 'Your Name'
+            ,analyticssiteid: 'XXXXXXX'
+        }
+    });
 });
 
 server.get('/ArtGallery', function(req,res){
-  res.render('pages/ArtGallery.jade', {
-    locals : {
-              title : 'Your Page Title'
-             ,description: 'Your Page Description'
-             ,author: 'Your Name'
-             ,analyticssiteid: 'XXXXXXX'
-            }
-  });
+    res.render('pages/ArtGallery.jade', {
+	locals: {
+            title : 'Your Page Title'
+            ,description: 'Your Page Description'
+            ,author: 'Your Name'
+            ,analyticssiteid: 'XXXXXXX'
+	}
+    });
 });
 
 server.get('/ArtGallery-*', function(req,res){
@@ -156,18 +158,45 @@ server.get('/ArtGallery-*', function(req,res){
 });
 
 
+
+
+
+server.post('/ENTRY*', function(req,res){
+
+    console.log('received update from another meshite');
+    console.log(req.body);
+
+    res.render('pages/Contact.jade', {     //FOR NOW A WRONG PAGE, bugbug
+    locals : {
+              title : 'bugbug'
+             ,description: 'bugbug'
+             ,author: 'bugbug'
+             ,analyticssiteid: 'bugbug'
+            }
+  });
+});
+
+
+
+
+
 //A Route for Creating a 500 Error (Useful to keep around)
 server.get('/500', function(req, res){
     throw new Error('This is a 500 Error');
 });
 
 //The 404 Route (ALWAYS Keep this as the last route)
-// server.get('/*', function(req, res){
-//     throw new NotFound();
-// });
+server.get('/*', function(req, res){
+    res.data = "hi there bugbug";
+    console.log(req.data);
+    console.log("that was req.data, this is 404 route bugbug");
+    console.log(req.url);
+    //throw new NotFound(req);  //bugbug ignore for now
+});
 
 function NotFound(msg){
     this.name = 'NotFound';
+    console.log('notfound'+msg)
     Error.call(this, msg);
     Error.captureStackTrace(this, arguments.callee);
 }
