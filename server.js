@@ -1,11 +1,13 @@
 var express = require("express"),
    server = express(),
    http = require("http").createServer(server),
-   bodyParser = require("body-parser"),
+   //bodyParser = require("body-parser"),
    io = require("socket.io").listen(http),
    // _ = require("underscore"),
-   port = (process.env.PORT || 8081);
+   port = (process.env.PORT || 8081),
+   util = require('util');
    
+var log = console.log;
 
 /* Server config */
 
@@ -25,7 +27,7 @@ server.set("view engine", "jade");
 server.use(express.static("static", __dirname + "/static"));
 
 //Tells server to support JSON requests
-server.use(bodyParser.json());
+//bugbug did this work?  server.use(bodyParser.json());
 
 ///////////////////////////////////////////
 //              Socket.io                //
@@ -161,19 +163,39 @@ server.get('/ArtGallery-*', function(req,res){
 
 
 
-server.post('/ENTRY*', function(req,res){
+server.post('/meshite*', function(req,res){
 
     console.log('received update from another meshite');
-    console.log(req.body);
 
-    res.render('pages/Contact.jade', {     //FOR NOW A WRONG PAGE, bugbug
-    locals : {
-              title : 'bugbug'
-             ,description: 'bugbug'
-             ,author: 'bugbug'
-             ,analyticssiteid: 'bugbug'
+    // Load the POST data
+    var post_body = '';
+    req.on('data', function(chunk){
+        post_body += chunk;
+        if (post_body.length > 1e6) { 
+	    // FLOOD ATTACK OR FAULTY CLIENT, NUKE REQUEST
+            req.connection.destroy();                
+        }
+    });
+
+    req.on('end', function(){
+	log("after end:"+post_body);
+
+	logdump("json",JSON);
+
+        var post_data  = JSON.parse(post_body);
+
+	logdump("bugbug108:",post_data);
+	//bugbug need to write this data to a db...into the log for now tho.
+
+	res.render('pages/Contact.jade', {     //FOR NOW A WRONG PAGE, bugbug
+	    locals : {
+		title : 'bugbug'
+		,description: 'bugbug'
+		,author: 'bugbug'
+		,analyticssiteid: 'bugbug'
             }
-  });
+	});
+    });
 });
 
 
@@ -204,3 +226,27 @@ function NotFound(msg){
 http.listen(server.get("port"), server.get("ipaddr"), function() {
   console.log("Server up and running. Go to http://" + server.get("ipaddr") + ":" + server.get("port"));
 });
+
+
+
+function dump(x) {
+    try {
+        if (typeof x === 'undefined')
+            return 'undefined';
+        if (x == null)
+            return 'null';
+        var retval = util.inspect(x,false,null);
+        return retval;
+    } catch(ex) {
+        return "bugbug1248c"+ex;
+    }
+}
+
+
+function logdump(label,value) {
+    log(label+"="+dump(value));
+}
+
+
+
+
